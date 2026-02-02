@@ -2,7 +2,7 @@
 
 # AI Command Center - Model Initialization Script
 # Author: Joel Adelubi
-# Version: 2.0
+# Version: 1.0
 # This script automatically pulls all necessary models for OpenWebUI
 
 echo "🤖 Starting Ollama service..."

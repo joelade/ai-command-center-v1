@@ -1,6 +1,6 @@
 # AI Command Center v2 - Docker Compose Configuration
 # Author: Joel Adelubi
-# Version: 2.0
+# Version: 1.0
 
 version: "3.9"
  

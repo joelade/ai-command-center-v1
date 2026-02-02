@@ -3,7 +3,7 @@
 
 # AI Command Center v2 - Installation Script
 # Author: Joel Adelubi
-# Version: 2.0
+# Version: 1.0
 
 set -e
 

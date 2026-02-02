@@ -2,7 +2,7 @@
 # AI Command Center 🧠🚀 (Version 2)
 
 **Author:** Joel Adelubi  
-**Version:** 2.0  
+**Version:** 1.0  
 **License:** Open Source
 
 Local Palantir-style AI platform built with Open WebUI, Ollama, RAG, and autonomous agents.
