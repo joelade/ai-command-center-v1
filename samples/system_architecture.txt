@@ -1,0 +1,45 @@
+AI Command Center Architecture
+
+Users -> Open WebUI -> AI Orchestrator -> Ollama LLM Engine -> Tools Layer -> Knowledge OS
+
+Components:
+- UI: Open WebUI
+- Agents: Planner, Executor, Validator, Memory, Optimizer
+- LLM: Ollama (local models)
+- Knowledge: Vector DB (Qdrant)
+- Automation: MCP Browser, DevOps tools
+- Security: RBAC, Audit, Vault
+
+
+./install.sh
+
+
+docker ps - to conform it's running
+
+docker exec -it ai-command-center-v2-ready-ollama-1 ollama list --- to see list models
+
+docker exec -it ai-command-center-v2-ready-ollama-1 ollama pull mistral(fast & lightweight assittant) or deepseek-coder(coing AI) OR Qwen2.5(strong reasoning) or nomic-embed-text (embeddings)
+
+
+
+
+No cloud
+No API keys
+No data leakage
+
+
+GGUF
+
+
+Get logs
+docker logs ai-command-center-v2-ready-open-webui-1 --tail=50
+
+
+
+  "mistral:latest"
+  "neural-chat"
+  "orca-mini"
+  "qwen2.5"
+  "nomic-embed-text:latest"
+  "deepseek-coder"
+  "llama3"

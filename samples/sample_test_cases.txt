@@ -1,0 +1,27 @@
+Test Case 1: Verify user login
+Test Case 2: Upload document to Knowledge Base
+Test Case 3: Query AI with uploaded document
+Test Case 4: Run autonomous agent task
+Test Case 5: Validate AI response accuracy
+Test Case 6: Verify user login credentials
+This test case verifies that the user is able to log in to the system with valid credentials.
+Test Case 7: Upload document and verify it appears in Knowledge Base
+This test case uploads a new document to the Knowledge Base and verifies that it appears in the list of documents.
+Test Case 8: Query AI with invalid input data
+This test case queries the AI system with invalid input data (e.g., a document that is not formatted correctly) and verifies that the AI system responds appropriately.
+Test Case 9: Run autonomous agent task with no documents available
+This test case runs an autonomous agent task without any documents available in the Knowledge Base and verifies that the AI system responds appropriately.
+Test Case 10: Validate AI response accuracy with multiple documents
+This test case validates the accuracy of the AI response by querying it with multiple documents and comparing the results to a known correct output.
+Test Case 11: Verify user can upload documents from different sources
+This test case verifies that the user is able to upload documents from different sources (e.g., a PDF, DOCX, or TXT file) and that they are processed correctly by the AI system.
+Test Case 12: Validate AI response accuracy with different input data formats
+This test case validates the accuracy of the AI response by querying it with different input data formats (e.g., PDF, DOCX, TXT) and comparing the results to a known correct output.
+Test Case 13: Verify user can download documents from Knowledge Base
+This test case verifies that the user is able to download documents from the Knowledge Base and that they are stored locally on the user's device.
+Test Case 14: Validate AI response accuracy with different document types
+This test case validates the accuracy of the AI response by querying it with different types of documents (e.g., PDF, DOCX, TXT) and comparing the results to a known correct output.
+Test Case 15: Verify user can search for documents in Knowledge Base
+This test case verifies that the user is able to search for documents in the Knowledge Base using various search terms and that they are returned with appropriate relevance.
+
+

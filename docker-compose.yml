@@ -1,0 +1,71 @@
+version: "3.9"
+ 
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ai-command-center-v2-ready-ollama-1
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+      - ./init-models.sh:/docker-entrypoint.d/init-models.sh
+    entrypoint: bash /docker-entrypoint.d/init-models.sh
+    restart: unless-stopped
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - ENABLE_RAG=1
+      - HF_HUB_DISABLE_TELEMETRY=1
+    volumes:
+      - openwebui:/app/backend/data
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  qa-orchestrator:
+    image: python:3.11-slim
+    container_name: qa-orchestrator
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./orchestrator:/app
+    working_dir: /app
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "pip install -r requirements.txt &&
+             uvicorn main:app --host 0.0.0.0 --port 8000"
+    depends_on:
+      - open-webui
+    restart: unless-stopped
+
+  qa-dashboard:
+    image: python:3.11-slim
+    container_name: qa-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./dashboard:/app
+    working_dir: /app
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_LOGGER_LEVEL=error
+    command: >
+      sh -c "pip install -r requirements.txt &&
+             streamlit run dashboard.py --server.port=8501 --server.address=0.0.0.0 --logger.level=error"
+    depends_on:
+      - qa-orchestrator
+    restart: unless-stopped
+ 
+volumes:
+  ollama:
+  openwebui:
+
+
+  
