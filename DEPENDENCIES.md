@@ -1,5 +1,8 @@
 # QA Command Center v2 - Dependencies & Setup
 
+**Author:** Joel Adelubi  
+**Version:** 2.0
+
 ## Project Structure
 ```
 ai-command-center-v2-ready/

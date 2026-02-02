@@ -1,3 +1,10 @@
+"""
+AI Command Center v2 - QA Multi-Agent Orchestrator
+Author: Joel Adelubi
+Version: 2.0
+Description: FastAPI orchestration service for multi-agent AI coordination
+"""
+
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 import httpx

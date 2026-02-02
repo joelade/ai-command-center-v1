@@ -1,6 +1,10 @@
 
 # AI Command Center 🧠🚀 (Version 2)
 
+**Author:** Joel Adelubi  
+**Version:** 2.0  
+**License:** Open Source
+
 Local Palantir-style AI platform built with Open WebUI, Ollama, RAG, and autonomous agents.
 
 ## 🔒 Privacy & Security - 100% Local & Safe
@@ -44,11 +48,29 @@ curl -fsSL install.sh | bash
 
 The installation script will:
 1. Start all Docker services
-2. **Automatically pull all 7 LLM models** (may take 30-60 minutes)
-3. Initialize the OpenWebUI interface
+2. **Automatically pull llama3 by default** (the recommended model)
+3. Optionally pull additional models (see Configuration below)
+4. Initialize the OpenWebUI interface
 
 Then open:
 http://localhost:3000
+
+### Configuration: Which Models to Pull?
+
+By default, only **llama3** is pulled (fast setup, ~4.7GB).
+
+To pull **all 7 models**, set the environment variable before starting:
+
+```bash
+# Pull all models on startup
+PULL_ALL_MODELS=1 docker compose up -d
+```
+
+Or edit `docker-compose.yml` and change:
+```yaml
+environment:
+  - PULL_ALL_MODELS=1
+```
 
 # QA AI Command Center – Full Docker Stack
 
@@ -66,15 +88,17 @@ http://localhost:3000
 | QA Dashboard | ✅ Running | 8501 | http://localhost:8501 |
 
 ## Available LLM Models
-All models are **automatically downloaded on first startup** and ready for use:
 
+### Default Model (Always Pulled)
+- **llama3** (4.7 GB) - Meta's latest language model - Recommended for general use
+
+### Optional Models (Pull with PULL_ALL_MODELS=1)
 1. **mistral:latest** (4.4 GB) - High-performance language model
 2. **neural-chat** (4.1 GB) - Conversational AI model
 3. **orca-mini** (2.0 GB) - Lightweight model
 4. **deepseek-coder** (776 MB) - Code generation specialist
-5. **llama3** (4.7 GB) - Meta's latest language model
-6. **qwen2.5** (4.7 GB) - Advanced Chinese-optimized model
-7. **nomic-embed-text:latest** - Text embedding model (for RAG)
+5. **qwen2.5** (4.7 GB) - Advanced Chinese-optimized model
+6. **nomic-embed-text:latest** - Text embedding model (for RAG)
 
 ## Getting Started
 
@@ -101,6 +125,17 @@ docker compose logs -f
 ```
 
 Pull additional models:
+```
+
+### Pull All Models Later
+If you started with default llama3, pull all optional models:
+```bash
+docker exec ai-command-center-v2-ready-ollama-1 ollama pull mistral:latest
+docker exec ai-command-center-v2-ready-ollama-1 ollama pull neural-chat
+docker exec ai-command-center-v2-ready-ollama-1 ollama pull orca-mini
+docker exec ai-command-center-v2-ready-ollama-1 ollama pull deepseek-coder
+docker exec ai-command-center-v2-ready-ollama-1 ollama pull qwen2.5
+docker exec ai-command-center-v2-ready-ollama-1 ollama pull nomic-embed-text:latest
 ```bash
 docker exec ai-command-center-v2-ready-ollama-1 ollama pull <model-name>
 ```

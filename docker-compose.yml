@@ -1,3 +1,7 @@
+# AI Command Center v2 - Docker Compose Configuration
+# Author: Joel Adelubi
+# Version: 2.0
+
 version: "3.9"
  
 services:
@@ -13,6 +17,8 @@ services:
     restart: unless-stopped
     environment:
       - OLLAMA_KEEP_ALIVE=24h
+      # Set to 1 to pull all available models, or leave empty to pull only llama3
+      - PULL_ALL_MODELS=0
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:latest

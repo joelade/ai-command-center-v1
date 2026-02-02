@@ -1,3 +1,9 @@
+"""
+AI Command Center v2 - QA Dashboard
+Author: Joel Adelubi
+Version: 2.0
+Description: Streamlit analytics dashboard for QA metrics and monitoring
+"""
 
 import streamlit as st
 import pandas as pd

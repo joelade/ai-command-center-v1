@@ -1,6 +1,10 @@
 
 #!/bin/bash
 
+# AI Command Center v2 - Installation Script
+# Author: Joel Adelubi
+# Version: 2.0
+
 set -e
 
 echo "🚀 Installing AI Command Center v2..."
