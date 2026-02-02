@@ -100,35 +100,175 @@ environment:
 5. **qwen2.5** (4.7 GB) - Advanced Chinese-optimized model
 6. **nomic-embed-text:latest** - Text embedding model (for RAG)
 
+## Service Details
+
+### 🤖 QA Orchestrator API (FastAPI)
+**Port:** 8000 | **URL:** http://localhost:8000
+
+The orchestrator is a multi-agent coordination service that manages LLM models and executes QA tests across multiple models simultaneously.
+
+#### Key Features:
+- **Model Management**: Pull, list, and remove LLM models from the Ollama registry
+- **Multi-Model Testing**: Run QA tests in parallel across configured models
+- **Asynchronous Operations**: Background task processing for long-running operations
+- **Configuration Management**: Manage active models and concurrent task limits
+- **Query Interface**: Send prompts to any model and receive responses
+
+#### Available Endpoints:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/models/available` | GET | List all available models that can be pulled |
+| `/models/list` | GET | List all currently installed models |
+| `/models/pull` | POST | Download and install a new model |
+| `/models/remove` | POST | Remove an installed model |
+| `/query` | POST | Send a prompt to a specific model |
+| `/config` | GET | View current agent configuration |
+| `/config/update` | POST | Update model configuration and task limits |
+| `/run` | POST | Execute QA tests with all configured models |
+| `/status` | GET | Get current system status and installed models |
+
+#### Usage Examples:
+
+**List Available Models:**
+```bash
+curl http://localhost:8000/models/available
+```
+
+**Pull a Model:**
+```bash
+curl -X POST http://localhost:8000/models/pull \
+  -H "Content-Type: application/json" \
+  -d '{"model_name": "mistral:latest"}'
+```
+
+**Query a Model:**
+```bash
+curl -X POST http://localhost:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "mistral:latest",
+    "prompt": "What is AI?",
+    "stream": false
+  }'
+```
+
+**Update Configuration:**
+```bash
+curl -X POST http://localhost:8000/config/update \
+  -H "Content-Type: application/json" \
+  -d '{
+    "models": ["mistral:latest", "neural-chat"],
+    "max_concurrent": 3
+  }'
+```
+
+**Run QA Tests:**
+```bash
+curl -X POST http://localhost:8000/run
+```
+
+---
+
+### 📊 QA Dashboard (Streamlit)
+**Port:** 8501 | **URL:** http://localhost:8501
+
+The dashboard provides a real-time analytics interface for monitoring QA test results, managing models, and viewing detailed test execution metrics.
+
+#### Key Features:
+- **Real-Time Metrics**: Completeness score, risk level, test coverage, response times
+- **Visual Analytics**: Success rate trends, test case distribution, performance charts
+- **Test Management**: Run test suites, monitor execution history, view detailed results
+- **Model Dashboard**: View active models, performance metrics, pull new models
+- **Comprehensive Reporting**: Test results summary, risk categorization, execution logs
+
+#### Dashboard Components:
+
+**Tab 1: Dashboard**
+- Key metrics overview (Completeness, Risk, Coverage, Response Time)
+- Test case distribution chart
+- Success rate trend analysis
+- Test results summary table
+- Risk categories breakdown
+- Recent test executions log
+
+**Tab 2: Models**
+- Available models to pull
+- Active models status and performance
+- Model download functionality
+- Performance comparison table (response time, success rate, latency)
+
+**Tab 3: Tests**
+- Test suite selection and configuration
+- Model selection for testing
+- Test execution controls
+- Test statistics overview
+- Execution history with timestamps
+
+#### How to Use:
+
+1. **View Dashboard**: Open http://localhost:8501 in your browser
+2. **Select Time Range**: Use sidebar controls to filter by Last 24h, 7d, 30d, or All Time
+3. **Manage Models**: Go to "Models" tab to pull additional LLM models
+4. **Run Tests**: Switch to "Tests" tab, select models and test suite, click "Run Tests"
+5. **Monitor Results**: View real-time results and historical execution data
+
+---
+
 ## Getting Started
 
-### Access the Web UI
-Open your browser and navigate to: **http://localhost:3000**
+### Step 1: Start All Services
+All services start automatically with Docker Compose:
+```bash
+docker compose up -d
+```
 
-### View the Dashboard
-Access analytics and monitoring: **http://localhost:8501**
+### Step 2: Access the Web Interfaces
 
-### API Access
-- Ollama API: http://localhost:11434
-- QA Orchestrator: http://localhost:8000
+| Service | URL | Purpose |
+|---------|-----|---------|
+| **Open WebUI** | http://localhost:3000 | Chat with AI models (ChatGPT replacement) |
+| **QA Dashboard** | http://localhost:8501 | QA testing analytics and monitoring |
+
+### Step 3: Use the QA System
+
+1. **Check Available Models:**
+   ```bash
+   curl http://localhost:8000/models/available
+   ```
+
+2. **Pull Additional Models (if needed):**
+   Use the QA Dashboard (Models tab) or API to download models
+
+3. **Configure Models for Testing:**
+   ```bash
+   curl -X POST http://localhost:8000/config/update \
+     -H "Content-Type: application/json" \
+     -d '{"models": ["mistral:latest", "neural-chat"], "max_concurrent": 2}'
+   ```
+
+4. **Run QA Tests:**
+   - Via Dashboard: Go to Tests tab → Select test suite → Click "Run Tests"
+   - Via API: `curl -X POST http://localhost:8000/run`
+
+5. **View Results:**
+   Open the Dashboard (http://localhost:8501) to see real-time results
 
 ### Useful Commands
 
-Check container status:
+**Check container status:**
 ```bash
 docker compose ps
 ```
 
-View logs:
+**View service logs:**
 ```bash
-docker compose logs -f
+docker compose logs -f orchestrator    # QA Orchestrator API
+docker compose logs -f dashboard       # QA Dashboard
+docker compose logs -f ollama          # LLM Runtime
 ```
 
-Pull additional models:
-```
-
-### Pull All Models Later
-If you started with default llama3, pull all optional models:
+**Pull additional models (if not already done):**
 ```bash
 docker exec ai-command-center-v2-ready-ollama-1 ollama pull mistral:latest
 docker exec ai-command-center-v2-ready-ollama-1 ollama pull neural-chat
@@ -136,13 +276,16 @@ docker exec ai-command-center-v2-ready-ollama-1 ollama pull orca-mini
 docker exec ai-command-center-v2-ready-ollama-1 ollama pull deepseek-coder
 docker exec ai-command-center-v2-ready-ollama-1 ollama pull qwen2.5
 docker exec ai-command-center-v2-ready-ollama-1 ollama pull nomic-embed-text:latest
-```bash
-docker exec ai-command-center-v2-ready-ollama-1 ollama pull <model-name>
 ```
 
-Stop all services:
+**Stop all services:**
 ```bash
 docker compose down
+```
+
+**Remove all data (fresh start):**
+```bash
+docker compose down --volumes
 ```
 
 ## 🔐 Technical Privacy Details
