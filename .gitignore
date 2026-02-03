@@ -2,6 +2,6 @@
 .env
 __pycache__/
 node_modules/
-.pdf
-.docx
-.pptx
+samples/AI_Command_Center_Architecture.pdf
+samples/AI_Command_Center_Demo_Presentation_Full_Architecture.pptx
+
