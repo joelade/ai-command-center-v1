@@ -263,7 +263,7 @@ The AI Command Center includes a Model Context Protocol (MCP) server that allows
 2. In OpenWebUI, enable MCP integration and configure it to connect to the MCP server at `http://localhost:3333`.
 3. Load your workspace files (e.g., `mcp-data/questions.md` and `mcp-data/answers.md`) into the context.
 
-### Example: Filling in Document Answers
+### Example: Filling in Document Answers 
 
 Use the following prompt in OpenWebUI to accurately populate questions with answers from reference documents:
 
