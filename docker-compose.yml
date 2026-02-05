@@ -28,6 +28,10 @@ services:
       - OLLAMA_BASE_URL=http://ollama:11434
       - ENABLE_RAG=1
       - HF_HUB_DISABLE_TELEMETRY=1
+      - ENABLE_MCP=true
+      - MCP_SERVERS=http://mcp-filesystem:3333
+    networks:
+      - ai-command-center-v2-ready_default
     volumes:
       - openwebui:/app/backend/data
     depends_on:
@@ -74,4 +78,3 @@ volumes:
   openwebui:
 
 
-  

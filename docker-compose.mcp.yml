@@ -1,0 +1,19 @@
+services:
+  mcp-filesystem:
+    image: python:3.11-slim
+    container_name: mcp-filesystem
+    working_dir: /app
+    volumes:
+      - ./mcp-data:/app/data
+      - ./main.py:/app/main.py
+    networks:
+      - ai-command-center-v2-ready_default
+    ports:
+      - "3333:3333"
+    command: >
+      sh -c "pip install modelcontextprotocol fastapi uvicorn && python main.py"
+    restart: unless-stopped
+ 
+networks:
+  ai-command-center-v2-ready_default:
+    external: true

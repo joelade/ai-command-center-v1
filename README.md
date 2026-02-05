@@ -1,4 +1,3 @@
-
 # AI Command Center 🧠🚀 (Version 2)
 
 **Author:** Joel Adelubi  
@@ -98,7 +97,7 @@ environment:
 3. **orca-mini** (2.0 GB) - Lightweight model
 4. **deepseek-coder** (776 MB) - Code generation specialist
 5. **qwen2.5** (4.7 GB) - Advanced Chinese-optimized model
-6. **nomic-embed-text:latest** - Text embedding model (for RAG)
+6. **nomic-embed-text:latest** - Text embedding model (for **RAG**)
 
 ## Service Details
 
@@ -334,4 +333,62 @@ For air-gapped environments:
 1. Download models on a connected machine
 2. Transfer Docker images and model volumes via external media
 3. Deploy in isolated network
+
+# AI Command Center v2
+
+A FastAPI-based filesystem server implementing the Model Context Protocol (MCP).
+
+**Author:** j.adelubi
+
+## Features
+
+- List files and directories
+- Serve static files
+- Get file contents via REST API
+- Directory traversal support
+
+## Usage
+
+### Installation
+
+```bash
+pip install fastapi uvicorn python-multipart
+```
+
+### Running the Server
+
+```bash
+python main.py
+```
+
+The server will start on `http://0.0.0.0:3333`
+
+### API Endpoints
+
+- `GET /` - List all files in the root directory
+- `GET /files/{path}` - Retrieve a specific file
+- `GET /static/{path}` - Access static files
+
+### Example Requests
+
+```bash
+# List files
+curl http://localhost:3333/
+
+# Get a file
+curl http://localhost:3333/files/example.txt
+
+# Access static content
+curl http://localhost:3333/static/data.json
+```
+
+### Configuration
+
+Set the data root directory by modifying the `create_app()` call:
+
+```python
+app = create_app(root="/your/custom/path")
+```
+
+Default root: `/app/data`
 
