@@ -253,6 +253,40 @@ docker compose up -d
 5. **View Results:**
    Open the Dashboard (http://localhost:8501) to see real-time results
 
+## Using MCP with OpenWebUI for AI-Assisted Tasks
+
+The AI Command Center includes a Model Context Protocol (MCP) server that allows OpenWebUI to access and manipulate files in your workspace for advanced AI-assisted workflows.
+
+### Setup MCP in OpenWebUI
+
+1. Ensure the MCP server is running (it's included in the Docker stack).
+2. In OpenWebUI, enable MCP integration and configure it to connect to the MCP server at `http://localhost:3333`.
+3. Load your workspace files (e.g., `mcp-data/questions.md` and `mcp-data/answers.md`) into the context.
+
+### Example: Filling in Document Answers
+
+Use the following prompt in OpenWebUI to accurately populate questions with answers from reference documents:
+
+```
+You are an expert assistant tasked with accurately populating a questions document using provided answers. Follow these instructions exactly:
+
+1. Read the entire contents of `answers.md` and `questions.md` from the workspace.
+
+2. For each question in `questions.md` (labeled Q1 through Q10), identify the corresponding answer in `answers.md` (labeled A1 through A10) based on the matching number and topic.
+
+3. Replace the placeholder `<!-- TO BE FILLED -->` under each question with the full text of the corresponding answer from `answers.md`. Do not alter the question text, numbering, or any other parts of `questions.md`.
+
+4. Ensure the replacement is exact: copy the answer text verbatim, including any formatting, references, or markdown elements, but exclude the answer label (e.g., "A1.") and the "---" separators.
+
+5. Do not add introductions, conclusions, or any additional text. Output only the updated `questions.md` file content.
+
+6. If there are any mismatches or ambiguities, prioritize the numerical order (Q1 with A1, etc.) and ensure the content aligns thematically.
+
+Perform this task now and provide the filled-in `questions.md` as the final output.
+```
+
+This allows the AI to leverage MCP for context-aware document editing, ensuring accurate and automated content population.
+
 ### Useful Commands
 
 **Check container status:**
