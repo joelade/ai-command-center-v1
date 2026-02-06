@@ -3,8 +3,7 @@
 ---
 
 ## Q1. What is the purpose of secure coding according to ISO/IEC 27002?
-Secure coding ensures that software is designed and implemented to prevent the introduction of vulnerabilities that could compromise the confidentiality, integrity, or availability of information. ISO/IEC 27002 emphasizes embedding security controls during development to reduce risk proactively.  
-[ISO/IEC 27002:2022 – Controls: 8.28]
+[ISO/IEC 27002:2022 - Controls: 8.2]
 
 ---
 
