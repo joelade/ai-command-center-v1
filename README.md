@@ -38,6 +38,8 @@ This platform is **completely self-hosted** and runs entirely on your machine wi
 - cy.prompt automation generation
 - Risk & completeness scoring
 - Dashboard service
+- **Advanced MCP with multi-source answer extraction**
+- **Support for screenshots (OCR), PDFs, Word docs, and web URLs**
 
 ## Quick Start (One Command)
 
@@ -83,6 +85,7 @@ environment:
 |---------|--------|------|-----|
 | Ollama (LLM Runtime) | ✅ Running | 11434 | http://localhost:11434 |
 | Open WebUI | ✅ Running | 3000 | http://localhost:3000 |
+| MCP Filesystem Server | ✅ Running | 3333 | http://localhost:3333 |
 | QA Orchestrator API | ✅ Running | 8000 | http://localhost:8000 |
 | QA Dashboard | ✅ Running | 8501 | http://localhost:8501 |
 
@@ -227,6 +230,7 @@ docker compose up -d
 | Service | URL | Purpose |
 |---------|-----|---------|
 | **Open WebUI** | http://localhost:3000 | Chat with AI models (ChatGPT replacement) |
+| **MCP Filesystem** | http://localhost:3333 | Multi-source answer extraction (API) |
 | **QA Dashboard** | http://localhost:8501 | QA testing analytics and monitoring |
 
 ### Step 3: Use the QA System
@@ -252,6 +256,30 @@ docker compose up -d
 
 5. **View Results:**
    Open the Dashboard (http://localhost:8501) to see real-time results
+
+### Step 4: Use Advanced MCP Features (Optional)
+
+Extract answers from multiple sources using the advanced MCP system:
+
+**From text files:**
+```bash
+python fill_answers.py  # Simple version
+```
+
+**From screenshots, PDFs, URLs, or Word documents:**
+```bash
+# Install advanced dependencies
+pip install -r requirements-advanced.txt
+
+# Extract from any source
+python fill_answers_advanced.py --sources mcp-data/answers.pdf
+python fill_answers_advanced.py --sources mcp-data/screenshot.png
+python fill_answers_advanced.py --sources "https://wiki.example.com/answers"
+```
+
+See **[MULTI_SOURCE_SETUP.md](MULTI_SOURCE_SETUP.md)** for complete documentation.
+
+---
 
 ## Using MCP with OpenWebUI for AI-Assisted Tasks
 
@@ -286,6 +314,141 @@ Perform this task now and provide the filled-in `questions.md` as the final outp
 ```
 
 This allows the AI to leverage MCP for context-aware document editing, ensuring accurate and automated content population.
+
+---
+
+## Advanced MCP: Multi-Source Answer Extraction 🚀
+
+The AI Command Center now includes **advanced answer extraction** that can pull content from multiple source types - perfect for filling questions from various document formats and sources.
+
+### Supported Source Types
+
+| Source Type | Format | Use Case |
+|-------------|--------|----------|
+| **Text Files** | .md, .txt, .json, .csv | Standard documents |
+| **Screenshots** | .png, .jpg, .gif | Whiteboard photos, presentation slides (OCR) |
+| **PDF Documents** | .pdf | Training manuals, guidelines, reports |
+| **Word Documents** | .docx | Team documents, shared files |
+| **Web URLs** | http://, https:// | Corporate wikis, documentation sites |
+| **Multiple Sources** | Combined | Mix any of the above |
+
+### Quick Start Examples
+
+#### Example 1: Extract from Screenshot (OCR)
+```bash
+# Take a screenshot of your answers, save to mcp-data/
+python fill_answers_advanced.py --sources mcp-data/screenshot.png
+```
+
+#### Example 2: Extract from PDF
+```bash
+python fill_answers_advanced.py --sources mcp-data/security-manual.pdf
+```
+
+#### Example 3: Extract from Website
+```bash
+python fill_answers_advanced.py --sources "https://wiki.company.com/iso27002-answers"
+```
+
+#### Example 4: Extract from Word Document
+```bash
+python fill_answers_advanced.py --sources mcp-data/team-answers.docx
+```
+
+#### Example 5: Combine Multiple Sources
+```bash
+python fill_answers_advanced.py \
+  --sources \
+    mcp-data/answers.md \
+    mcp-data/training.pdf \
+    mcp-data/whiteboard.jpg \
+    "https://compliance.example.com/answers"
+```
+
+### Installation for Advanced Features
+
+**Install all capabilities:**
+```bash
+pip install -r requirements-advanced.txt
+```
+
+**For Windows OCR (screenshots):**
+- Download Tesseract: https://github.com/UB-Mannheim/tesseract/wiki
+- Install and add to PATH
+
+**Or install selectively:**
+```bash
+pip install requests beautifulsoup4     # Web scraping
+pip install pytesseract pillow          # Screenshots/OCR
+pip install PyPDF2                      # PDFs
+pip install python-docx                 # Word documents
+```
+
+### Real-World Use Cases
+
+**Security Training:** Extract answers from PDF training materials
+```bash
+python fill_answers_advanced.py --sources mcp-data/iso27002-training.pdf
+```
+
+**Meeting Notes:** Convert whiteboard photos to structured answers (OCR)
+```bash
+python fill_answers_advanced.py --sources mcp-data/whiteboard-1.jpg mcp-data/whiteboard-2.jpg
+```
+
+**Corporate Wiki:** Pull answers directly from documentation sites
+```bash
+python fill_answers_advanced.py --sources "https://wiki.yourcompany.com/security"
+```
+
+**Mixed Sources:** Combine information from multiple locations
+```bash
+python fill_answers_advanced.py \
+  --sources \
+    mcp-data/official-doc.pdf \
+    mcp-data/expert-notes.docx \
+    "https://docs.example.com/compliance"
+```
+
+### Configuration File Support
+
+Create `mcp-data/sources-config.json`:
+```json
+{
+  "sources": [
+    {"type": "file", "path": "answers.md"},
+    {"type": "pdf", "path": "guidelines.pdf"},
+    {"type": "image", "path": "screenshot.png"},
+    {"type": "url", "path": "https://docs.example.com"}
+  ]
+}
+```
+
+Run with config:
+```bash
+python fill_answers_advanced.py --config mcp-data/sources-config.json
+```
+
+### Documentation
+
+- **[MULTI_SOURCE_SETUP.md](MULTI_SOURCE_SETUP.md)** - Complete setup and examples
+- **[QUICK_START_MULTI_SOURCE.md](QUICK_START_MULTI_SOURCE.md)** - Quick reference guide
+- **[MULTI_SOURCE_GUIDE.md](MULTI_SOURCE_GUIDE.md)** - Detailed feature documentation
+
+### Feature Comparison
+
+| Feature | Basic Script | Advanced Script |
+|---------|--------------|-----------------|
+| Markdown files | ✅ | ✅ |
+| Screenshots (OCR) | ❌ | ✅ |
+| PDFs | ❌ | ✅ |
+| Word docs | ❌ | ✅ |
+| Web URLs | ❌ | ✅ |
+| Multiple sources | ❌ | ✅ |
+
+**Use `fill_answers.py` for simple cases, `fill_answers_advanced.py` for multi-source extraction.**
+
+---
 
 ### Useful Commands
 

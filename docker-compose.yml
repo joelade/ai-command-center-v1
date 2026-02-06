@@ -20,8 +20,22 @@ services:
       # Set to 1 to pull all available models, or leave empty to pull only llama3
       - PULL_ALL_MODELS=0
 
+  mcp-filesystem:
+    image: python:3.11-slim
+    container_name: mcp-filesystem
+    working_dir: /app
+    volumes:
+      - ./mcp-data:/app/data
+      - ./main.py:/app/main.py
+    ports:
+      - "3333:3333"
+    command: >
+      sh -c "pip install fastapi uvicorn && python main.py"
+    restart: unless-stopped
+
   open-webui:
     image: ghcr.io/open-webui/open-webui:latest
+    container_name: open-webui
     ports:
       - "3000:8080"
     environment:
@@ -30,12 +44,14 @@ services:
       - HF_HUB_DISABLE_TELEMETRY=1
       - ENABLE_MCP=true
       - MCP_SERVERS=http://mcp-filesystem:3333
-    networks:
-      - ai-command-center-v2-ready_default
+      - MCP_SERVER_URL=http://mcp-filesystem:3333
+      - MCP_ENABLE_FILESYSTEM=true
+      - MCP_FILESYSTEM_ROOT=/app/data
     volumes:
       - openwebui:/app/backend/data
     depends_on:
       - ollama
+      - mcp-filesystem
     restart: unless-stopped
 
   qa-orchestrator:

@@ -1,0 +1,30 @@
+# Docker Compose for Advanced MCP Server
+# Supports: Screenshots, PDFs, URLs, DOCX, and more
+# Author: j.adelubi
+
+version: "3.9"
+ 
+services:
+  mcp-filesystem-advanced:
+    image: python:3.11-slim
+    container_name: mcp-filesystem-advanced
+    working_dir: /app
+    volumes:
+      - ./mcp-data:/app/data
+      - ./advanced_mcp.py:/app/advanced_mcp.py
+    ports:
+      - "3333:3333"
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "apt-get update && 
+             apt-get install -y tesseract-ocr &&
+             pip install fastapi uvicorn python-multipart requests beautifulsoup4 pytesseract pillow PyPDF2 python-docx &&
+             python advanced_mcp.py"
+    restart: unless-stopped
+    networks:
+      - ai-command-center-v2-ready_default
+
+networks:
+  ai-command-center-v2-ready_default:
+    external: true
