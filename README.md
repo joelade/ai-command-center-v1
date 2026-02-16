@@ -361,6 +361,25 @@ POST /rest/atm/1.0/testcase
 GET /rest/api/3/search?jql=project=LE
 ```
 
+**Update Zephyr Test Execution (PUT - Recommended):**
+```bash
+PUT /rest/atm/1.0/testexecution/{id}
+{
+  "status": "Pass",
+  "actualEndDate": "2024-02-16T10:30:00Z",
+  "comment": "Test passed successfully"
+}
+```
+
+**Update Zephyr Test Execution (PATCH - Deprecated):**
+```bash
+PATCH /rest/atm/1.0/testexecution/{id}
+{
+  "status": "Pass"
+}
+```
+⚠️ **Note:** PATCH method is deprecated. Use PUT method above instead.
+
 ### Key API Endpoints
 
 **Jira:**
