@@ -297,6 +297,100 @@ services:
 - Configure external service to POST to URL
 - Deploy workflow
 
+## Jira & Zephyr Scale Integration
+
+### Overview
+
+n8n integrates seamlessly with Jira and Zephyr Scale for automated test case management, issue tracking, and quality assurance workflows.
+
+### Prerequisites
+
+- Jira Cloud instance with API token
+- Zephyr Scale (Cloud) add-on installed in Jira
+- API credentials in `.env.n8n`
+
+### Quick Setup
+
+1. **Get Jira API Token**: https://id.atlassian.com/manage-profile/security/api-tokens
+2. **Add Jira Credential** to n8n:
+   - Go to Credentials → New → Jira
+   - Host: `https://yourinstance.atlassian.net/`
+   - Email & API Token
+   - Save
+3. **Configure Zephyr**: Use HTTP Request node with Bearer token authentication
+
+### Key Integration Features
+
+| Feature | Use Case |
+|---------|----------|
+| **Auto-create Test Cases from Bugs** | Bug created in Jira → Create test case in Zephyr |
+| **Update Issue Status from Tests** | Test execution completed → Update Jira issue |
+| **Sync Test Results** | Scheduled sync of test executions to Jira |
+| **Auto-link Issues & Tests** | Link created issues to corresponding test cases |
+| **Webhook Triggers** | React to Jira events (created, updated, transitioned) |
+
+### Common Workflows
+
+**Create Jira Issue:**
+```bash
+POST /rest/api/3/issues
+{
+  "fields": {
+    "project": {"key": "LE"},
+    "summary": "Issue title",
+    "description": "Issue details",
+    "issuetype": {"name": "Bug"}
+  }
+}
+```
+
+**Create Zephyr Test Case:**
+```bash
+POST /rest/atm/1.0/testcase
+{
+  "name": "Test Case Name",
+  "projectKey": "LE",
+  "priority": 1,
+  "objective": "Test objective"
+}
+```
+
+**Get Jira Issues:**
+```bash
+GET /rest/api/3/search?jql=project=LE
+```
+
+### Key API Endpoints
+
+**Jira:**
+- Create: `POST /rest/api/3/issues`
+- Search: `GET /rest/api/3/search`
+- Update: `PUT /rest/api/3/issues/{key}`
+- Transition: `POST /rest/api/3/issues/{key}/transitions`
+
+**Zephyr Scale:**
+- Create Test Case: `POST /rest/atm/1.0/testcase`
+- Get Test Cases: `GET /rest/atm/1.0/testcase`
+- Create Test Execution: `POST /rest/atm/1.0/testexecution`
+- Update Execution: `PUT /rest/atm/1.0/testexecution/{id}`
+
+### Webhooks
+
+**Set up Jira webhook to trigger n8n:**
+1. Go to Jira Settings → System → Webhooks
+2. Create webhook pointing to: `http://localhost:5678/webhook/jira`
+3. Select events (created, updated, etc.)
+4. In n8n, add Webhook trigger node with path `/jira`
+
+### Complete Guide
+
+See **[N8N_JIRA_ZEPHYR_SETUP.md](N8N_JIRA_ZEPHYR_SETUP.md)** for:
+- Detailed setup instructions
+- Full workflow examples with JSON
+- Troubleshooting guide
+- Rate limiting strategies
+- Advanced automation patterns
+
 ## Documentation
 
 For more information about n8n:
