@@ -1,5 +1,6 @@
 # n8n Workflow Automation Platform
 
+**Author:** Joel Adelubi  
 **Version:** 1.0  
 **License:** Open Source
 
