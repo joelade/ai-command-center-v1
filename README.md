@@ -298,16 +298,15 @@ services:
 - Configure external service to POST to URL
 - Deploy workflow
 
-## Jira & Zephyr Scale Integration
+## Jira Integration
 
 ### Overview
 
-n8n integrates seamlessly with Jira and Zephyr Scale for automated test case management, issue tracking, and quality assurance workflows.
+n8n integrates with Jira Cloud for automated issue tracking, workflow automation, and quality assurance integration. Jira is the primary system of record for issue and project management.
 
 ### Prerequisites
 
 - Jira Cloud instance with API token
-- Zephyr Scale (Cloud) add-on installed in Jira
 - API credentials in `.env.n8n`
 
 ### Quick Setup
@@ -318,16 +317,16 @@ n8n integrates seamlessly with Jira and Zephyr Scale for automated test case man
    - Host: `https://yourinstance.atlassian.net/`
    - Email & API Token
    - Save
-3. **Configure Zephyr**: Use HTTP Request node with Bearer token authentication
+3. **Start automating**: Create workflows that interact with Jira
 
 ### Key Integration Features
 
 | Feature | Use Case |
 |---------|----------|
-| **Auto-create Test Cases from Bugs** | Bug created in Jira → Create test case in Zephyr |
-| **Update Issue Status from Tests** | Test execution completed → Update Jira issue |
-| **Sync Test Results** | Scheduled sync of test executions to Jira |
-| **Auto-link Issues & Tests** | Link created issues to corresponding test cases |
+| **Create/Search Issues** | Automated issue creation and querying |
+| **Update Issue Status** | Workflow-triggered status transitions |
+| **Add Comments** | Automated notifications and updates |
+| **Link Issues** | Create relationships between issues |
 | **Webhook Triggers** | React to Jira events (created, updated, transitioned) |
 
 ### Common Workflows
@@ -345,20 +344,19 @@ POST /rest/api/3/issues
 }
 ```
 
-**Create Zephyr Test Case:**
-```bash
-POST /rest/atm/1.0/testcase
-{
-  "name": "Test Case Name",
-  "projectKey": "LE",
-  "priority": 1,
-  "objective": "Test objective"
-}
-```
-
 **Get Jira Issues:**
 ```bash
 GET /rest/api/3/search?jql=project=LE
+```
+
+**Update Issue Status:**
+```bash
+POST /rest/api/3/issues/{key}/transitions
+{
+  "transition": {
+    "id": "11"
+  }
+}
 ```
 
 ### Key API Endpoints
@@ -368,12 +366,7 @@ GET /rest/api/3/search?jql=project=LE
 - Search: `GET /rest/api/3/search`
 - Update: `PUT /rest/api/3/issues/{key}`
 - Transition: `POST /rest/api/3/issues/{key}/transitions`
-
-**Zephyr Scale:**
-- Create Test Case: `POST /rest/atm/1.0/testcase`
-- Get Test Cases: `GET /rest/atm/1.0/testcase`
-- Create Test Execution: `POST /rest/atm/1.0/testexecution`
-- Update Execution: `PUT /rest/atm/1.0/testexecution/{id}`
+- Add Comment: `POST /rest/api/3/issues/{key}/comments`
 
 ### Webhooks
 
@@ -383,14 +376,43 @@ GET /rest/api/3/search?jql=project=LE
 3. Select events (created, updated, etc.)
 4. In n8n, add Webhook trigger node with path `/jira`
 
-### Complete Guide
+---
 
-See **[N8N_JIRA_ZEPHYR_SETUP.md](N8N_JIRA_ZEPHYR_SETUP.md)** for:
-- Detailed setup instructions
-- Full workflow examples with JSON
-- Troubleshooting guide
-- Rate limiting strategies
-- Advanced automation patterns
+## ⚠️ Zephyr Scale Integration - DEPRECATED
+
+**Status:** Deprecated - Zephyr Scale API support is being phased out
+
+### What Changed
+
+Zephyr Scale (formerly Zephyr for Jira) has transitioned to a cloud-only model with API limitations. For test management workflows, consider these alternatives:
+
+### Recommended Alternatives
+
+| Tool | Use Case | Status |
+|------|----------|--------|
+| **TestRail** | Comprehensive test case management | ✅ Recommended |
+| **Jira Test Management (Zephyr)** | Native Jira integration | ✅ Active |
+| **XRay** | Advanced test management in Jira | ✅ Recommended |
+| **Azure DevOps Test Plans** | Integrated test management | ✅ Recommended |
+| **qTest** | Enterprise test management | ✅ Recommended |
+
+### Migration Guide
+
+If you're currently using Zephyr Scale with n8n:
+
+1. **Export test data** from Zephyr into structured format (JSON/CSV)
+2. **Choose alternative** based on your needs
+3. **Update workflows** to use new test management API
+4. **See** [N8N_JIRA_ZEPHYR_SETUP.md](N8N_JIRA_ZEPHYR_SETUP.md) for legacy integration patterns
+
+### Legacy Support
+
+The original Zephyr Scale integration guide is available in [N8N_JIRA_ZEPHYR_SETUP.md](N8N_JIRA_ZEPHYR_SETUP.md) for reference on:
+- Historical setup instructions
+- Existing workflow patterns
+- API endpoint documentation
+
+**Note:** New projects should use recommended alternatives listed above.
 
 ## Documentation
 
