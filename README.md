@@ -265,6 +265,174 @@ services:
      -d '{"test": "data"}'
    ```
 
+## OpenWebUI
+
+### Overview
+
+OpenWebUI is a modern, intuitive interface for interacting with local LLMs (Large Language Models) via Ollama. It provides a chat interface with RAG (Retrieval Augmented Generation) support and MCP (Model Context Protocol) integration.
+
+### Start OpenWebUI
+
+OpenWebUI is included in the main docker-compose.yml:
+
+```bash
+docker compose up -d open-webui
+```
+
+This will start:
+- **OpenWebUI** (port 3000) - Web interface for LLM interaction
+- **Ollama** (port 11434) - Local LLM engine (if not already running)
+- **MCP Filesystem** (port 3333) - Model Context Protocol server for file access
+
+### Access OpenWebUI
+
+Once running, open your browser and navigate to:
+
+```
+http://localhost:3000
+```
+
+### Stop OpenWebUI
+
+```bash
+docker compose down open-webui
+```
+
+### Configuration
+
+OpenWebUI is configured with:
+- **OLLAMA_BASE_URL** - Connection to local Ollama instance
+- **ENABLE_RAG** - Retrieval Augmented Generation support
+- **ENABLE_MCP** - Model Context Protocol integration
+- **MCP_SERVERS** - MCP filesystem server for file operations
+
+### Safely Update OpenWebUI
+
+To update OpenWebUI to a new version without losing data:
+
+**Step 1: Check Current Version**
+```bash
+docker compose ps open-webui
+```
+
+**Step 2: Pull Latest Image** (or specific version)
+```bash
+# Update to latest version
+docker compose pull open-webui
+
+# OR update to specific version (e.g., v0.8.3)
+# Edit docker-compose.yml and change:
+# image: ghcr.io/open-webui/open-webui:v0.8.3
+# Then run:
+docker compose pull open-webui
+```
+
+**Step 3: Stop Current Container**
+```bash
+docker compose stop open-webui
+```
+
+**Step 4: Recreate Container with New Image**
+```bash
+docker compose up -d open-webui
+```
+
+**Step 5: Verify Update**
+```bash
+# Check logs for any errors
+docker compose logs -f open-webui
+
+# Verify you can access the UI
+# Open: http://localhost:3000
+```
+
+⚠️ **Important:** Your data is stored in the `openwebui:/app/backend/data` volume and will be preserved during updates.
+
+### Backup User Data (Optional)
+
+To backup your OpenWebUI data before updating:
+
+```bash
+# Create backup directory
+mkdir -p openwebui-backup
+
+# Export volume contents
+docker run --rm -v openwebui:/data -v %cd%/openwebui-backup:/backup alpine tar czf /backup/openwebui-backup-$(date +%Y%m%d).tar.gz -C /data .
+```
+
+### Restore from Backup
+
+```bash
+# Stop OpenWebUI
+docker compose stop open-webui
+
+# Restore backup
+docker run --rm -v openwebui:/data -v %cd%/openwebui-backup:/backup alpine tar xzf /backup/openwebui-backup-YYYYMMDD.tar.gz -C /data
+
+# Start OpenWebUI
+docker compose up -d open-webui
+```
+
+### Useful Commands
+
+**Check Container Status**
+```bash
+docker compose ps open-webui
+```
+
+**View Logs**
+```bash
+docker compose logs -f open-webui
+```
+
+**Restart Service**
+```bash
+docker compose restart open-webui
+```
+
+**View Storage Usage**
+```bash
+docker volume inspect openwebui
+```
+
+### Troubleshooting
+
+**Port Already in Use**
+If port 3000 is in use, modify `docker-compose.yml`:
+```yaml
+open-webui:
+  ports:
+    - "3001:8080"  # Use 3001 instead
+```
+
+**Cannot Connect to Ollama**
+Ensure Ollama is running:
+```bash
+docker compose ps ollama
+docker compose logs ollama
+```
+
+**MCP Not Working**
+Verify MCP filesystem service is running:
+```bash
+docker compose ps mcp-filesystem
+docker compose logs mcp-filesystem
+```
+
+**Out of Memory**
+Increase resource limits in `docker-compose.yml`:
+```yaml
+open-webui:
+  deploy:
+    resources:
+      limits:
+        cpus: '2'
+        memory: 4G
+      reservations:
+        cpus: '1'
+        memory: 2G
+```
+
 ## Integration Guide
 
 ### Connect to External APIs
