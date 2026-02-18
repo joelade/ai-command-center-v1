@@ -1,9 +1,9 @@
-# AI Command Center v2 - Docker Compose Configuration
-# Author: Joel Adelubi
-# Version: 1.0
+# Alternative: Integrated Docker Compose with n8n in main stack
+# Use this if you want n8n integrated with your other services (Ollama, Open WebUI, Orchestrator)
+# Command: docker compose -f docker-compose.integrated.yml up -d
 
 version: "3.9"
- 
+
 services:
   ollama:
     image: ollama/ollama:latest
@@ -17,8 +17,9 @@ services:
     restart: unless-stopped
     environment:
       - OLLAMA_KEEP_ALIVE=24h
-      # Set to 1 to pull all available models, or leave empty to pull only llama3
       - PULL_ALL_MODELS=0
+    networks:
+      - ai-network
 
   mcp-filesystem:
     image: python:3.11-slim
@@ -32,9 +33,11 @@ services:
     command: >
       sh -c "pip install fastapi uvicorn && python main.py"
     restart: unless-stopped
+    networks:
+      - ai-network
 
   open-webui:
-    image: ghcr.io/open-webui/open-webui:v0.8.3
+    image: ghcr.io/open-webui/open-webui:latest
     container_name: open-webui
     ports:
       - "3000:8080"
@@ -53,6 +56,56 @@ services:
       - ollama
       - mcp-filesystem
     restart: unless-stopped
+    networks:
+      - ai-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: n8n-postgres
+    environment:
+      - POSTGRES_USER=${DB_USER:-n8n}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-n8n_password}
+      - POSTGRES_DB=${DB_NAME:-n8n}
+    volumes:
+      - n8n_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-n8n}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-network
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${DB_NAME:-n8n}
+      - DB_POSTGRESDB_USER=${DB_USER:-n8n}
+      - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD:-n8n_password}
+      - N8N_HOST=n8n
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=UTC
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n-data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ai-network
 
   qa-orchestrator:
     image: python:3.11-slim
@@ -64,12 +117,16 @@ services:
     working_dir: /app
     environment:
       - PYTHONUNBUFFERED=1
+      - N8N_BASE_URL=http://n8n:5678
     command: >
       sh -c "pip install -r requirements.txt &&
              uvicorn main:app --host 0.0.0.0 --port 8000"
     depends_on:
       - open-webui
+      - n8n
     restart: unless-stopped
+    networks:
+      - ai-network
 
   qa-dashboard:
     image: python:3.11-slim
@@ -82,15 +139,22 @@ services:
     environment:
       - STREAMLIT_SERVER_HEADLESS=true
       - STREAMLIT_LOGGER_LEVEL=error
+      - N8N_BASE_URL=http://n8n:5678
     command: >
       sh -c "pip install -r requirements.txt &&
              streamlit run dashboard.py --server.port=8501 --server.address=0.0.0.0 --logger.level=error"
     depends_on:
       - qa-orchestrator
     restart: unless-stopped
- 
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    driver: bridge
+
 volumes:
   ollama:
   openwebui:
-
-
+  n8n_postgres_data:
+  n8n_data:

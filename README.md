@@ -1,428 +1,594 @@
-# AI Command Center 🧠🚀 (Version 2)
+# n8n Workflow Automation Platform
 
 **Author:** Joel Adelubi  
 **Version:** 1.0  
 **License:** Open Source
 
-Local Palantir-style AI platform built with Open WebUI, Ollama, RAG, and autonomous agents.
+A powerful, open-source workflow automation platform for integrating applications and automating complex business processes. n8n allows you to create sophisticated workflows without coding.
 
-## 🔒 Privacy & Security - 100% Local & Safe
+## Quick Start
 
-This platform is **completely self-hosted** and runs entirely on your machine with **ZERO external dependencies**:
+### Prerequisites
+- Docker and Docker Compose installed
+- In the workspace directory
 
-✅ **No Cloud Services** - Everything runs locally in Docker containers
-✅ **No Data Collection** - Your data never leaves your computer
-✅ **Telemetry Disabled** - All analytics and tracking are completely disabled
-✅ **No API Keys Required** - No connection to external AI providers
-✅ **Offline Operation** - Works without internet after initial setup
-✅ **Open Source Models** - Built on community-maintained, transparent models
-✅ **Full Control** - You own and control all your data
+### Start n8n
 
-### What This Means
-- **Your Conversations Stay Private**: Every prompt, response, and interaction is stored locally
-- **No Monitoring**: No usage tracking, no telemetry, no analytics
-- **Sovereign AI**: Complete independence from commercial AI providers
-- **GDPR/CCPA Compliant**: No data sharing with third parties
-- **Enterprise Ready**: Suitable for handling sensitive business information
-
-## Features
-- Local ChatGPT replacement (Ollama)
-- AI Command Center UI (Open WebUI)
-- Knowledge AI with RAG
-- Multi-agent orchestration
-- DevOps & automation ready
-- Offline & sovereign AI
-- Auto-installer script
-- QA Multi-Agent Orchestrator (FastAPI)
-- Vector-ready knowledge integration
-- cy.prompt automation generation
-- Risk & completeness scoring
-- Dashboard service
-
-## Quick Start (One Command)
+Run the following command from the workspace directory:
 
 ```bash
-curl -fsSL install.sh | bash
+docker compose -f docker-compose.n8n.yml up -d
 ```
 
-The installation script will:
-1. Start all Docker services
-2. **Automatically pull llama3 by default** (the recommended model)
-3. Optionally pull additional models (see Configuration below)
-4. Initialize the OpenWebUI interface
+This will start:
+- **PostgreSQL Database** (port 5432) - Workflow data persistence
+- **n8n Workflow Engine** (port 5678) - Workflow automation runtime
 
-Then open:
-http://localhost:3000
+### Access n8n
 
-### Configuration: Which Models to Pull?
+Once running, open your browser and navigate to:
 
-By default, only **llama3** is pulled (fast setup, ~4.7GB).
+```
+http://localhost:5678
+```
 
-To pull **all 7 models**, set the environment variable before starting:
+### Stop n8n
 
 ```bash
-# Pull all models on startup
-PULL_ALL_MODELS=1 docker compose up -d
+docker compose -f docker-compose.n8n.yml down
 ```
 
-Or edit `docker-compose.yml` and change:
-```yaml
-environment:
-  - PULL_ALL_MODELS=1
+### Stop and Remove All Data
+
+To completely remove the containers and volumes (clears all workflows and data):
+
+```bash
+docker compose -f docker-compose.n8n.yml down -v
 ```
 
-# QA AI Command Center – Full Docker Stack
+## Configuration
 
-## ✅ Setup Status
-- **Docker Services**: All running
-- **Models**: Fully downloaded and ready
-- **Total Disk Usage**: ~27GB
+### Environment Variables
+
+The setup uses PostgreSQL as the database backend, which is recommended for production environments.
+
+Edit `.env` to customize:
+- `N8N_HOST` - Hostname/IP (default: localhost)
+- `N8N_PORT` - n8n port (default: 5678)
+- `DB_TYPE` - Database type (default: postgres)
+- `DB_USER` - PostgreSQL username
+- `DB_PASSWORD` - PostgreSQL password
+- `DB_NAME` - Database name
+
+### View Logs
+
+Check service logs to troubleshoot:
+
+```bash
+docker compose -f docker-compose.n8n.yml logs -f n8n
+```
+
+View database logs:
+
+```bash
+docker compose -f docker-compose.n8n.yml logs -f postgres
+```
 
 ## Services
-| Service | Status | Port | URL |
-|---------|--------|------|-----|
-| Ollama (LLM Runtime) | ✅ Running | 11434 | http://localhost:11434 |
-| Open WebUI | ✅ Running | 3000 | http://localhost:3000 |
-| QA Orchestrator API | ✅ Running | 8000 | http://localhost:8000 |
-| QA Dashboard | ✅ Running | 8501 | http://localhost:8501 |
 
-## Available LLM Models
-
-### Default Model (Always Pulled)
-- **llama3** (4.7 GB) - Meta's latest language model - Recommended for general use
-
-### Optional Models (Pull with PULL_ALL_MODELS=1)
-1. **mistral:latest** (4.4 GB) - High-performance language model
-2. **neural-chat** (4.1 GB) - Conversational AI model
-3. **orca-mini** (2.0 GB) - Lightweight model
-4. **deepseek-coder** (776 MB) - Code generation specialist
-5. **qwen2.5** (4.7 GB) - Advanced Chinese-optimized model
-6. **nomic-embed-text:latest** - Text embedding model (for **RAG**)
-
-## Service Details
-
-### 🤖 QA Orchestrator API (FastAPI)
-**Port:** 8000 | **URL:** http://localhost:8000
-
-The orchestrator is a multi-agent coordination service that manages LLM models and executes QA tests across multiple models simultaneously.
-
-#### Key Features:
-- **Model Management**: Pull, list, and remove LLM models from the Ollama registry
-- **Multi-Model Testing**: Run QA tests in parallel across configured models
-- **Asynchronous Operations**: Background task processing for long-running operations
-- **Configuration Management**: Manage active models and concurrent task limits
-- **Query Interface**: Send prompts to any model and receive responses
-
-#### Available Endpoints:
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/models/available` | GET | List all available models that can be pulled |
-| `/models/list` | GET | List all currently installed models |
-| `/models/pull` | POST | Download and install a new model |
-| `/models/remove` | POST | Remove an installed model |
-| `/query` | POST | Send a prompt to a specific model |
-| `/config` | GET | View current agent configuration |
-| `/config/update` | POST | Update model configuration and task limits |
-| `/run` | POST | Execute QA tests with all configured models |
-| `/status` | GET | Get current system status and installed models |
-
-#### Usage Examples:
-
-**List Available Models:**
-```bash
-curl http://localhost:8000/models/available
-```
-
-**Pull a Model:**
-```bash
-curl -X POST http://localhost:8000/models/pull \
-  -H "Content-Type: application/json" \
-  -d '{"model_name": "mistral:latest"}'
-```
-
-**Query a Model:**
-```bash
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "mistral:latest",
-    "prompt": "What is AI?",
-    "stream": false
-  }'
-```
-
-**Update Configuration:**
-```bash
-curl -X POST http://localhost:8000/config/update \
-  -H "Content-Type: application/json" \
-  -d '{
-    "models": ["mistral:latest", "neural-chat"],
-    "max_concurrent": 3
-  }'
-```
-
-**Run QA Tests:**
-```bash
-curl -X POST http://localhost:8000/run
-```
-
----
-
-### 📊 QA Dashboard (Streamlit)
-**Port:** 8501 | **URL:** http://localhost:8501
-
-The dashboard provides a real-time analytics interface for monitoring QA test results, managing models, and viewing detailed test execution metrics.
-
-#### Key Features:
-- **Real-Time Metrics**: Completeness score, risk level, test coverage, response times
-- **Visual Analytics**: Success rate trends, test case distribution, performance charts
-- **Test Management**: Run test suites, monitor execution history, view detailed results
-- **Model Dashboard**: View active models, performance metrics, pull new models
-- **Comprehensive Reporting**: Test results summary, risk categorization, execution logs
-
-#### Dashboard Components:
-
-**Tab 1: Dashboard**
-- Key metrics overview (Completeness, Risk, Coverage, Response Time)
-- Test case distribution chart
-- Success rate trend analysis
-- Test results summary table
-- Risk categories breakdown
-- Recent test executions log
-
-**Tab 2: Models**
-- Available models to pull
-- Active models status and performance
-- Model download functionality
-- Performance comparison table (response time, success rate, latency)
-
-**Tab 3: Tests**
-- Test suite selection and configuration
-- Model selection for testing
-- Test execution controls
-- Test statistics overview
-- Execution history with timestamps
-
-#### How to Use:
-
-1. **View Dashboard**: Open http://localhost:8501 in your browser
-2. **Select Time Range**: Use sidebar controls to filter by Last 24h, 7d, 30d, or All Time
-3. **Manage Models**: Go to "Models" tab to pull additional LLM models
-4. **Run Tests**: Switch to "Tests" tab, select models and test suite, click "Run Tests"
-5. **Monitor Results**: View real-time results and historical execution data
-
----
-
-## Getting Started
-
-### Step 1: Start All Services
-All services start automatically with Docker Compose:
-```bash
-docker compose up -d
-```
-
-### Step 2: Access the Web Interfaces
-
-| Service | URL | Purpose |
-|---------|-----|---------|
-| **Open WebUI** | http://localhost:3000 | Chat with AI models (ChatGPT replacement) |
-| **QA Dashboard** | http://localhost:8501 | QA testing analytics and monitoring |
-
-### Step 3: Use the QA System
-
-1. **Check Available Models:**
-   ```bash
-   curl http://localhost:8000/models/available
-   ```
-
-2. **Pull Additional Models (if needed):**
-   Use the QA Dashboard (Models tab) or API to download models
-
-3. **Configure Models for Testing:**
-   ```bash
-   curl -X POST http://localhost:8000/config/update \
-     -H "Content-Type: application/json" \
-     -d '{"models": ["mistral:latest", "neural-chat"], "max_concurrent": 2}'
-   ```
-
-4. **Run QA Tests:**
-   - Via Dashboard: Go to Tests tab → Select test suite → Click "Run Tests"
-   - Via API: `curl -X POST http://localhost:8000/run`
-
-5. **View Results:**
-   Open the Dashboard (http://localhost:8501) to see real-time results
-
-## Using MCP with OpenWebUI for AI-Assisted Tasks
-
-The AI Command Center includes a Model Context Protocol (MCP) server that allows OpenWebUI to access and manipulate files in your workspace for advanced AI-assisted workflows.
-
-### Setup MCP in OpenWebUI
-
-1. Ensure the MCP server is running (it's included in the Docker stack).
-2. In OpenWebUI, enable MCP integration and configure it to connect to the MCP server at `http://localhost:3333`.
-3. Load your workspace files (e.g., `mcp-data/questions.md` and `mcp-data/answers.md`) into the context.
-
-### Example: Filling in Document Answers 
-
-Use the following prompt in OpenWebUI to accurately populate questions with answers from reference documents:
-
-```
-You are an expert assistant tasked with accurately populating a questions document using provided answers. Follow these instructions exactly:
-
-1. Read the entire contents of `answers.md` and `questions.md` from the workspace.
-
-2. For each question in `questions.md` (labeled Q1 through Q10), identify the corresponding answer in `answers.md` (labeled A1 through A10) based on the matching number and topic.
-
-3. Replace the placeholder `<!-- TO BE FILLED -->` under each question with the full text of the corresponding answer from `answers.md`. Do not alter the question text, numbering, or any other parts of `questions.md`.
-
-4. Ensure the replacement is exact: copy the answer text verbatim, including any formatting, references, or markdown elements, but exclude the answer label (e.g., "A1.") and the "---" separators.
-
-5. Do not add introductions, conclusions, or any additional text. Output only the updated `questions.md` file content.
-
-6. If there are any mismatches or ambiguities, prioritize the numerical order (Q1 with A1, etc.) and ensure the content aligns thematically.
-
-Perform this task now and provide the filled-in `questions.md` as the final output.
-```
-
-This allows the AI to leverage MCP for context-aware document editing, ensuring accurate and automated content population.
-
-### Useful Commands
-
-**Check container status:**
-```bash
-docker compose ps
-```
-
-**View service logs:**
-```bash
-docker compose logs -f orchestrator    # QA Orchestrator API
-docker compose logs -f dashboard       # QA Dashboard
-docker compose logs -f ollama          # LLM Runtime
-```
-
-**Pull additional models (if not already done):**
-```bash
-docker exec ai-command-center-v2-ready-ollama-1 ollama pull mistral:latest
-docker exec ai-command-center-v2-ready-ollama-1 ollama pull neural-chat
-docker exec ai-command-center-v2-ready-ollama-1 ollama pull orca-mini
-docker exec ai-command-center-v2-ready-ollama-1 ollama pull deepseek-coder
-docker exec ai-command-center-v2-ready-ollama-1 ollama pull qwen2.5
-docker exec ai-command-center-v2-ready-ollama-1 ollama pull nomic-embed-text:latest
-```
-
-**Stop all services:**
-```bash
-docker compose down
-```
-
-**Remove all data (fresh start):**
-```bash
-docker compose down --volumes
-```
-
-## 🔐 Technical Privacy Details
-
-### Telemetry Status - ALL DISABLED
-- ✅ **HuggingFace Telemetry**: Disabled (`HF_HUB_DISABLE_TELEMETRY=1`)
-- ✅ **Streamlit Analytics**: Disabled (headless mode)
-- ✅ **Ollama Tracking**: Disabled by default
-- ✅ **Log Collection**: Error-level logging only
-- ✅ **External APIs**: No external calls unless explicitly configured
-
-### Data Storage
-- **All Data**: Stored in Docker volumes on your local machine
-- **Ollama Models**: Stored in `/root/.ollama` volume
-- **WebUI Data**: Stored in `/app/backend/data` volume
-- **User Files**: Stored in mounted directories only
-
-### Network Security
-- **Localhost Only**: All services listen on `127.0.0.1` by default
-- **No Internet Required**: After initial model download, operates completely offline
-- **No Phone Home**: No periodic connectivity checks or version reporting
-- **Firewall Ready**: Easily configure network isolation if needed
-
-### Compliance
-- **GDPR**: No personal data collection or sharing
-- **HIPAA**: Suitable for healthcare data handling
-- **CCPA**: No data sales or external sharing
-- **SOC2**: Enterprise-grade data control
-
-## ⚙️ Advanced Configuration
-
-### Disable External Network Access (Maximum Security)
-To run the platform with no external network access:
-```bash
-docker run --network none [other flags]
-```
-
-### Custom Data Retention
-All data is stored locally. Delete volumes to completely remove all traces:
-```bash
-docker compose down --volumes
-```
-
-### Air-Gapped Deployment
-For air-gapped environments:
-1. Download models on a connected machine
-2. Transfer Docker images and model volumes via external media
-3. Deploy in isolated network
-
-# AI Command Center v2
-
-A FastAPI-based filesystem server implementing the Model Context Protocol (MCP).
-
-**Author:** j.adelubi
-
-## Features
-
-- List files and directories
-- Serve static files
-- Get file contents via REST API
-- Directory traversal support
+| Service | Port | URL | Purpose |
+|---------|------|-----|---------|
+| **n8n** | 5678 | http://localhost:5678 | Workflow automation UI and engine |
+| **PostgreSQL** | 5432 | - | Workflow data storage |
 
 ## Usage
 
-### Installation
+### Creating Your First Workflow
 
+1. **Access n8n**: Open http://localhost:5678 in your browser
+2. **Create New Workflow**: Click "New Workflow" button
+3. **Add Nodes**: Search and add nodes from the node library
+4. **Connect Nodes**: Link nodes together by connecting outputs to inputs
+5. **Test**: Click "Test" or "Execute" to run the workflow
+6. **Deploy**: Once satisfied, the workflow runs on schedule or trigger
+
+### Available Nodes
+
+n8n comes with hundreds of pre-built nodes for:
+- **Communication**: Email, Slack, Teams, Discord
+- **Data**: HTTP requests, databases, APIs
+- **Business Apps**: Salesforce, HubSpot, Stripe, Shopify
+- **Cloud Services**: AWS, Google Cloud, Azure
+- **Utilities**: Transformers, code execution, conditionals
+- **Scheduling**: Cron jobs, timers, webhooks
+
+### Integration Examples
+
+#### Example 1: HTTP Request to External API
+
+1. Add "HTTP Request" node
+2. Set method (GET, POST, etc.)
+3. Enter URL and headers
+4. Execute to see response
+5. Map response data to next node
+
+#### Example 2: Webhook Trigger
+
+1. Add "Webhook" node as trigger
+2. Copy the webhook URL
+3. Configure external service to POST to that URL
+4. Add processing nodes
+5. Deploy workflow
+
+#### Example 3: Database Operations
+
+1. Add "Postgres" node
+2. Configure connection settings
+3. Write SQL queries
+4. Execute to read/write data
+
+## Useful Commands
+
+### Check Container Status
 ```bash
-pip install fastapi uvicorn python-multipart
+docker compose -f docker-compose.n8n.yml ps
 ```
 
-### Running the Server
-
+### View n8n Logs
 ```bash
-python main.py
+docker compose -f docker-compose.n8n.yml logs -f n8n
 ```
 
-The server will start on `http://0.0.0.0:3333`
+### View Database Logs
+```bash
+docker compose -f docker-compose.n8n.yml logs postgres
+```
 
-### API Endpoints
-
-- `GET /` - List all files in the root directory
-- `GET /files/{path}` - Retrieve a specific file
-- `GET /static/{path}` - Access static files
-
-### Example Requests
+### View Database
+Access PostgreSQL database directly:
 
 ```bash
-# List files
-curl http://localhost:3333/
+docker exec -it n8n-postgres psql -U n8n -d n8n
+```
 
-# Get a file
-curl http://localhost:3333/files/example.txt
+Then you can run SQL queries:
+```sql
+-- List all workflows
+SELECT id, name, active FROM n8n_workflow;
 
-# Access static content
-curl http://localhost:3333/static/data.json
+-- List executions
+SELECT id, workflowId, startedAt, stoppedAt, status FROM n8n_execution ORDER BY startedAt DESC LIMIT 10;
+```
+
+### Restart Services
+Restart individual services without stopping others:
+
+```bash
+docker compose -f docker-compose.n8n.yml restart n8n
+```
+
+### Update to Latest n8n Image
+```bash
+docker compose -f docker-compose.n8n.yml pull
+docker compose -f docker-compose.n8n.yml up -d
+```
+
+### Backup Workflows
+
+Backup your workflows and credentials:
+
+```bash
+# Create backup directory
+mkdir -p n8n-backup
+
+# Copy database container data
+docker cp n8n-postgres:/var/lib/postgresql/data n8n-backup/postgres-data
+
+# Or export specific data via psql
+docker exec n8n-postgres pg_dump -U n8n n8n > n8n-backup/n8n-backup.sql
+```
+
+### Restore from Backup
+
+```bash
+docker exec -i n8n-postgres psql -U n8n n8n < n8n-backup/n8n-backup.sql
+```
+
+## Troubleshooting
+
+### Port Already in Use
+If port 5678 is in use, modify `docker-compose.n8n.yml`:
+```yaml
+ports:
+  - "5679:5678"  # Use 5679 instead
+```
+
+Then access n8n at http://localhost:5679
+
+### Database Connection Issues
+Wait a few seconds for PostgreSQL to be ready. Check logs:
+```bash
+docker compose -f docker-compose.n8n.yml logs postgres
+```
+
+If still having issues, restart the database:
+```bash
+docker compose -f docker-compose.n8n.yml restart postgres
+```
+
+### Permission Issues (Linux/Mac)
+```bash
+sudo docker compose -f docker-compose.n8n.yml up -d
+```
+
+### n8n Won't Start
+Check the logs for specific errors:
+```bash
+docker compose -f docker-compose.n8n.yml logs n8n | tail -50
+```
+
+Common issues:
+- **Database not ready**: Wait a few seconds and try accessing the UI again
+- **Port in use**: Change the port in docker-compose.n8n.yml
+- **Volume permissions**: Ensure Docker has access to the data volumes
+
+### Memory/CPU Issues
+If n8n is slow or crashes, increase resource limits in `docker-compose.n8n.yml`:
+
+```yaml
+services:
+  n8n:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+```
+
+### Workflows Not Executing
+1. Check if n8n service is running: `docker compose -f docker-compose.n8n.yml ps`
+2. Check n8n logs for errors
+3. Verify workflow is active/enabled
+4. Check credentials are properly configured
+
+### Webhook Not Triggering
+1. Ensure workflow is active
+2. Verify external service is posting to correct endpoint
+3. Check n8n logs for webhook events
+4. Test webhook manually:
+   ```bash
+   curl -X POST http://localhost:5678/webhook/your-workflow-id \
+     -H "Content-Type: application/json" \
+     -d '{"test": "data"}'
+   ```
+
+## OpenWebUI
+
+### Overview
+
+OpenWebUI is a modern, intuitive interface for interacting with local LLMs (Large Language Models) via Ollama. It provides a chat interface with RAG (Retrieval Augmented Generation) support and MCP (Model Context Protocol) integration.
+
+### Start OpenWebUI
+
+OpenWebUI is included in the main docker-compose.yml:
+
+```bash
+docker compose up -d open-webui
+```
+
+This will start:
+- **OpenWebUI** (port 3000) - Web interface for LLM interaction
+- **Ollama** (port 11434) - Local LLM engine (if not already running)
+- **MCP Filesystem** (port 3333) - Model Context Protocol server for file access
+
+### Access OpenWebUI
+
+Once running, open your browser and navigate to:
+
+```
+http://localhost:3000
+```
+
+### Stop OpenWebUI
+
+```bash
+docker compose down open-webui
 ```
 
 ### Configuration
 
-Set the data root directory by modifying the `create_app()` call:
+OpenWebUI is configured with:
+- **OLLAMA_BASE_URL** - Connection to local Ollama instance
+- **ENABLE_RAG** - Retrieval Augmented Generation support
+- **ENABLE_MCP** - Model Context Protocol integration
+- **MCP_SERVERS** - MCP filesystem server for file operations
 
-```python
-app = create_app(root="/your/custom/path")
+### Safely Update OpenWebUI
+
+To update OpenWebUI to a new version without losing data:
+
+**Step 1: Check Current Version**
+```bash
+docker compose ps open-webui
 ```
 
-Default root: `/app/data`
+**Step 2: Pull Latest Image** (or specific version)
+```bash
+# Update to latest version
+docker compose pull open-webui
+
+# OR update to specific version (e.g., v0.8.3)
+# Edit docker-compose.yml and change:
+# image: ghcr.io/open-webui/open-webui:v0.8.3
+# Then run:
+docker compose pull open-webui
+```
+
+**Step 3: Stop Current Container**
+```bash
+docker compose stop open-webui
+```
+
+**Step 4: Recreate Container with New Image**
+```bash
+docker compose up -d open-webui
+```
+
+**Step 5: Verify Update**
+```bash
+# Check logs for any errors
+docker compose logs -f open-webui
+
+# Verify you can access the UI
+# Open: http://localhost:3000
+```
+
+⚠️ **Important:** Your data is stored in the `openwebui:/app/backend/data` volume and will be preserved during updates.
+
+### Backup User Data (Optional)
+
+To backup your OpenWebUI data before updating:
+
+```bash
+# Create backup directory
+mkdir -p openwebui-backup
+
+# Export volume contents
+docker run --rm -v openwebui:/data -v %cd%/openwebui-backup:/backup alpine tar czf /backup/openwebui-backup-$(date +%Y%m%d).tar.gz -C /data .
+```
+
+### Restore from Backup
+
+```bash
+# Stop OpenWebUI
+docker compose stop open-webui
+
+# Restore backup
+docker run --rm -v openwebui:/data -v %cd%/openwebui-backup:/backup alpine tar xzf /backup/openwebui-backup-YYYYMMDD.tar.gz -C /data
+
+# Start OpenWebUI
+docker compose up -d open-webui
+```
+
+### Useful Commands
+
+**Check Container Status**
+```bash
+docker compose ps open-webui
+```
+
+**View Logs**
+```bash
+docker compose logs -f open-webui
+```
+
+**Restart Service**
+```bash
+docker compose restart open-webui
+```
+
+**View Storage Usage**
+```bash
+docker volume inspect openwebui
+```
+
+### Troubleshooting
+
+**Port Already in Use**
+If port 3000 is in use, modify `docker-compose.yml`:
+```yaml
+open-webui:
+  ports:
+    - "3001:8080"  # Use 3001 instead
+```
+
+**Cannot Connect to Ollama**
+Ensure Ollama is running:
+```bash
+docker compose ps ollama
+docker compose logs ollama
+```
+
+**MCP Not Working**
+Verify MCP filesystem service is running:
+```bash
+docker compose ps mcp-filesystem
+docker compose logs mcp-filesystem
+```
+
+**Out of Memory**
+Increase resource limits in `docker-compose.yml`:
+```yaml
+open-webui:
+  deploy:
+    resources:
+      limits:
+        cpus: '2'
+        memory: 4G
+      reservations:
+        cpus: '1'
+        memory: 2G
+```
+
+## Integration Guide
+
+### Connect to External APIs
+
+1. Create a new workflow
+2. Add "HTTP Request" node
+3. Set up authentication (API key, OAuth, Basic auth)
+4. Configure request parameters
+5. Test and monitor responses
+
+### Common Integrations
+
+**Slack Integration:**
+- Add "Slack" node
+- Connect with workspace API token
+- Choose action (send message, post to channel, etc.)
+
+**Email Integration:**
+- Add "Email Send" node
+- Configure SMTP settings
+- Set recipients, subject, and content
+
+**Database Integration:**
+- Add database-specific node (Postgres, MySQL, etc.)
+- Configure connection details
+- Write SQL queries
+
+**Webhook Integration:**
+- Add "Webhook" node as trigger
+- Copy webhook URL
+- Configure external service to POST to URL
+- Deploy workflow
+
+## Jira & Zephyr Scale Integration
+
+### Overview
+
+n8n integrates seamlessly with Jira and Zephyr Scale for automated test case management, issue tracking, and quality assurance workflows.
+
+### Prerequisites
+
+- Jira Cloud instance with API token
+- Zephyr Scale (Cloud) add-on installed in Jira
+- API credentials in `.env.n8n`
+
+### Quick Setup
+
+1. **Get Jira API Token**: https://id.atlassian.com/manage-profile/security/api-tokens
+2. **Add Jira Credential** to n8n:
+   - Go to Credentials → New → Jira
+   - Host: `https://yourinstance.atlassian.net/`
+   - Email & API Token
+   - Save
+3. **Configure Zephyr**: Use HTTP Request node with Bearer token authentication
+
+### Key Integration Features
+
+| Feature | Use Case |
+|---------|----------|
+| **Auto-create Test Cases from Bugs** | Bug created in Jira → Create test case in Zephyr |
+| **Update Issue Status from Tests** | Test execution completed → Update Jira issue |
+| **Sync Test Results** | Scheduled sync of test executions to Jira |
+| **Auto-link Issues & Tests** | Link created issues to corresponding test cases |
+| **Webhook Triggers** | React to Jira events (created, updated, transitioned) |
+
+### Common Workflows
+
+**Create Jira Issue:**
+```bash
+POST /rest/api/3/issues
+{
+  "fields": {
+    "project": {"key": "LE"},
+    "summary": "Issue title",
+    "description": "Issue details",
+    "issuetype": {"name": "Bug"}
+  }
+}
+```
+
+**Create Zephyr Test Case:**
+```bash
+POST /rest/atm/1.0/testcase
+{
+  "name": "Test Case Name",
+  "projectKey": "LE",
+  "priority": 1,
+  "objective": "Test objective"
+}
+```
+
+**Get Jira Issues:**
+```bash
+GET /rest/api/3/search?jql=project=LE
+```
+
+**Update Zephyr Test Execution (PUT - Recommended):**
+```bash
+PUT /rest/atm/1.0/testexecution/{id}
+{
+  "status": "Pass",
+  "actualEndDate": "2024-02-16T10:30:00Z",
+  "comment": "Test passed successfully"
+}
+```
+
+**Update Zephyr Test Execution (PATCH - Deprecated):**
+```bash
+PATCH /rest/atm/1.0/testexecution/{id}
+{
+  "status": "Pass"
+}
+```
+⚠️ **Note:** PATCH method is deprecated. Use PUT method above instead.
+
+### Key API Endpoints
+
+**Jira:**
+- Create: `POST /rest/api/3/issues`
+- Search: `GET /rest/api/3/search`
+- Update: `PUT /rest/api/3/issues/{key}`
+- Transition: `POST /rest/api/3/issues/{key}/transitions`
+
+**Zephyr Scale:**
+- Create Test Case: `POST /rest/atm/1.0/testcase`
+- Get Test Cases: `GET /rest/atm/1.0/testcase`
+- Create Test Execution: `POST /rest/atm/1.0/testexecution`
+- Update Execution: `PUT /rest/atm/1.0/testexecution/{id}` (Recommended)
+- Update Execution (**deprecated**): `PATCH /rest/atm/1.0/testexecution/{id}` (Use PUT instead)
+
+### Webhooks
+
+**Set up Jira webhook to trigger n8n:**
+1. Go to Jira Settings → System → Webhooks
+2. Create webhook pointing to: `http://localhost:5678/webhook/jira`
+3. Select events (created, updated, etc.)
+4. In n8n, add Webhook trigger node with path `/jira`
+
+### Complete Guide
+
+See **[N8N_JIRA_ZEPHYR_SETUP.md](N8N_JIRA_ZEPHYR_SETUP.md)** for:
+- Detailed setup instructions
+- Full workflow examples with JSON
+- Troubleshooting guide
+- Rate limiting strategies
+- Advanced automation patterns
+
+## Documentation
+
+For more information about n8n:
+- [Official n8n Documentation](https://docs.n8n.io/)
+- [n8n Node Reference](https://docs.n8n.io/nodes/)
+- [Workflow Templating](https://docs.n8n.io/workflows/)
+- [API Documentation](https://docs.n8n.io/api/)
+
+## License
+
+n8n is open-source and available under the Sustainable Use License (SUL) and the Server Side Public License (SSPL).
 

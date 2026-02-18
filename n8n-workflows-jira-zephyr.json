@@ -1,0 +1,213 @@
+{
+  "workflows": [
+    {
+      "name": "Sync Jira Issues to Zephyr Test Cases",
+      "description": "Fetches Jira issues and creates corresponding test cases in Zephyr Scale",
+      "nodes": [
+        {
+          "parameters": {
+            "triggerType": "manually"
+          },
+          "name": "Manual Trigger",
+          "type": "n8n-nodes-base.manualTrigger",
+          "typeVersion": 1,
+          "position": [100, 300]
+        },
+        {
+          "parameters": {
+            "authentication": "predefinedCredentialType",
+            "nodeCredentialType": "jira",
+            "resource": "issue",
+            "operation": "search",
+            "jql": "project = LE AND type = Bug",
+            "maxResults": 50
+          },
+          "name": "Get Jira Issues",
+          "type": "n8n-nodes-base.jira",
+          "typeVersion": 2,
+          "position": [300, 300]
+        },
+        {
+          "parameters": {
+            "operation": "executeOnceForEachItem",
+            "itemsInput": "=.issues"
+          },
+          "name": "Loop Through Issues",
+          "type": "n8n-nodes-base.splitInBatches",
+          "typeVersion": 3,
+          "position": [500, 300]
+        },
+        {
+          "parameters": {
+            "url": "=https://loginvsi.atlassian.net/rest/atm/1.0/testcase",
+            "method": "POST",
+            "authentication": "predefinedCredentialType",
+            "nodeCredentialType": "httpBasicAuth",
+            "bodyParameters": {
+              "parameters": [
+                {
+                  "name": "name",
+                  "value": "=Test: {{ $node[\"Loop Through Issues\"].json.fields.summary }}"
+                },
+                {
+                  "name": "projectKey",
+                  "value": "LE"
+                },
+                {
+                  "name": "objective",
+                  "value": "=Test for issue {{ $node[\"Loop Through Issues\"].json.key }}"
+                },
+                {
+                  "name": "precondition",
+                  "value": "=Issue: {{ $node[\"Loop Through Issues\"].json.fields.description }}"
+                }
+              ]
+            }
+          },
+          "name": "Create Zephyr Test Case",
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.1,
+          "position": [700, 300]
+        },
+        {
+          "parameters": {
+            "content": "=Created test case for {{ $node[\"Loop Through Issues\"].json.key }}"
+          },
+          "name": "Log Success",
+          "type": "n8n-nodes-base.executeCommand",
+          "typeVersion": 1,
+          "position": [900, 300]
+        }
+      ],
+      "connections": {
+        "Manual Trigger": {
+          "success": [["Get Jira Issues", 0]]
+        },
+        "Get Jira Issues": {
+          "success": [["Loop Through Issues", 0]]
+        },
+        "Loop Through Issues": {
+          "success": [["Create Zephyr Test Case", 0]]
+        },
+        "Create Zephyr Test Case": {
+          "success": [["Log Success", 0]]
+        }
+      }
+    },
+    {
+      "name": "Update Jira Issue Status from Zephyr Test Results",
+      "description": "Monitors test executions in Zephyr and updates linked Jira issues",
+      "nodes": [
+        {
+          "parameters": {
+            "triggerType": "manually"
+          },
+          "name": "Manual Start",
+          "type": "n8n-nodes-base.manualTrigger",
+          "typeVersion": 1,
+          "position": [100, 300]
+        },
+        {
+          "parameters": {
+            "url": "=https://loginvsi.atlassian.net/rest/atm/1.0/testexecution",
+            "method": "GET",
+            "authentication": "predefinedCredentialType",
+            "nodeCredentialType": "httpBasicAuth"
+          },
+          "name": "Get Test Executions",
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.1,
+          "position": [300, 300]
+        },
+        {
+          "parameters": {
+            "operation": "executeOnceForEachItem",
+            "itemsInput": "=.testExecutions"
+          },
+          "name": "Loop Executions",
+          "type": "n8n-nodes-base.splitInBatches",
+          "typeVersion": 3,
+          "position": [500, 300]
+        },
+        {
+          "parameters": {
+            "authentication": "predefinedCredentialType",
+            "nodeCredentialType": "jira",
+            "resource": "issue",
+            "operation": "update",
+            "issueKey": "=LE-{{ $node[\"Loop Executions\"].json.issueId }}",
+            "updateFields": {
+              "fields": {
+                "status": "=if($node[\"Loop Executions\"].json.status == 'PASS') { 'Done' } else { 'In Progress' }"
+              }
+            }
+          },
+          "name": "Update Jira Status",
+          "type": "n8n-nodes-base.jira",
+          "typeVersion": 2,
+          "position": [700, 300]
+        }
+      ],
+      "connections": {
+        "Manual Start": {
+          "success": [["Get Test Executions", 0]]
+        },
+        "Get Test Executions": {
+          "success": [["Loop Executions", 0]]
+        },
+        "Loop Executions": {
+          "success": [["Update Jira Status", 0]]
+        }
+      }
+    },
+    {
+      "name": "Webhook: Create Issue from Slack",
+      "description": "Webhook that receives Slack messages and creates Jira issues",
+      "nodes": [
+        {
+          "parameters": {
+            "httpMethod": "POST",
+            "path": "slack-issue-webhook"
+          },
+          "name": "Webhook",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 1,
+          "position": [100, 300]
+        },
+        {
+          "parameters": {
+            "authentication": "predefinedCredentialType",
+            "nodeCredentialType": "jira",
+            "resource": "issue",
+            "operation": "create",
+            "issueTypeField": "Task",
+            "summary": "=Slack: {{ $node[\"Webhook\"].json.text }}",
+            "description": "=From: {{ $node[\"Webhook\"].json.user }}\nChannel: {{ $node[\"Webhook\"].json.channel }}",
+            "projectKey": "LE"
+          },
+          "name": "Create Issue",
+          "type": "n8n-nodes-base.jira",
+          "typeVersion": 2,
+          "position": [300, 300]
+        },
+        {
+          "parameters": {
+            "jsonOutput": "={{ id: $node[\"Create Issue\"].json.id, key: $node[\"Create Issue\"].json.key, message: 'Issue created' }}"
+          },
+          "name": "Return Response",
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1,
+          "position": [500, 300]
+        }
+      ],
+      "connections": {
+        "Webhook": {
+          "success": [["Create Issue", 0]]
+        },
+        "Create Issue": {
+          "success": [["Return Response", 0]]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "description": "Answer sources configuration - supports multiple formats",
+  "sources": [
+    {
+      "type": "file",
+      "path": "answers.md",
+      "description": "Markdown file with answers"
+    },
+    {
+      "type": "url",
+      "path": "https://example.com/iso27002-answers",
+      "description": "Web page with ISO/IEC 27002 answers"
+    },
+    {
+      "type": "pdf",
+      "path": "answers.pdf",
+      "description": "PDF document with answers"
+    },
+    {
+      "type": "docx",
+      "path": "answers.docx",
+      "description": "Word document with answers"
+    },
+    {
+      "type": "image",
+      "path": "screenshot1.png",
+      "description": "Screenshot with text answers (OCR)"
+    },
+    {
+      "type": "image",
+      "path": "screenshot2.jpg",
+      "description": "Another screenshot (OCR)"
+    }
+  ],
+  "questions": "questions.md",
+  "output": "questions_filled.md"
+}
